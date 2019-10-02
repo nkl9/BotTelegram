@@ -1,1 +1,1 @@
-web: python Telegramm.py
+web: python Telegram.py
