@@ -4,66 +4,41 @@ from telebot import types
 bot = telebot.TeleBot('877686854:AAGR_kcDf70arRSR0wzWi4K_8HDumhv9HpM')
 
 
-# @bot.message_handler(content_types=["text"])
-# def get_text_messages(message):
-    # if message.text == "Привет":
-    #     bot.send_message(message.from_user.id, 'Привет, чем могу помочь ?')
-    # elif message.text == "/help":
-    #     bot.send_message(message.from_user.id, "Напиши привет")
-    # else:
-    #     bot.send_message(message.from_user.id, 'Я тебя не понимаю. Напиши /help ')
+@bot.message_handler(commands=['n'])
+
+def start (message):
+    bot.send_message(message.from_user.id, "Введите число")
+    bot.register_next_step_handler(message, number_to_words)
 
 
-name = ""
-surname = ""
-age = 0
-
-
-@bot.message_handler(content_types=['text'])
-def start(message):
-    if message.text == '/reg':
-        bot.send_message(message.from_user.id, 'Как тебя зовут')
-        bot.register_next_step_handler(message, get_name)  # следующий шаг - функция get_name
+def number_to_words(message):
+    try:
+        num = int(message.text)
+    except :
+        bot.send_message(message.from_user.id, "Введите число")
+    f = {1 : 'один', 2 : 'два', 3 : 'три', 4 : 'четыре', 5 : 'пять',
+    6 : 'шесть', 7 : 'семь', 8 : 'восемь', 9 : 'девять'}
+    l = {10 : 'десять', 20 : 'двадцать', 30 : 'тридцать', 40 : 'сорок',
+    50 : 'пятьдесят', 60 : 'шестьдесят', 70 : 'семьдесят',
+    80 : 'восемьдесят', 90 : 'девяносто'}
+    s = {11 : 'одиннадцать', 12 : 'двенадцать', 13 : 'тринадцать',
+    14 : 'четырнадцать', 15 : 'пятнадцать', 16 : 'шестнадцать',
+    17 : 'семнадцать', 18 : 'восемнадцать', 19 : 'девятнадцать'}
+    n1 = num % 10
+    n2 = num - n1
+    if (num < 10):
+        bot.send_message(message.from_user.id, f.get(num))
+    elif 10 < num < 20 :
+        bot.send_message(message.from_user.id, s.get(num))
+    elif num >= 10 and num in l:
+        bot.send_message(message.from_user.id, l.get(num))
+    elif (num > 20):
+        bot.send_message(message.from_user.id, l.get(n2) + ' ' + f.get(n1))
     else:
-        bot.send_message(message.from_user.id, 'Напиши /reg')
+        bot.send_message(message.from_user.id,'Введено число, которое не лежит в [1:99]!')
+@bot.message_handler(content_types=['text'])
 
-
-def get_name(message):  # получаем фамилию
-    global name
-    name = message.text
-    bot.send_message(message.from_user.id, 'Какая у тебя фамилия')
-    bot.register_next_step_handler(message, get_surname)
-
-
-def get_surname(message):
-    global surname
-    surname = message.text
-    bot.send_message(message.from_user.id, "Сколько тебе лет ?")
-    bot.register_next_step_handler(message, get_age)
-
-
-def get_age(message):
-    global age
-    while age == 0:  # Проверяем что возрас изменился
-        try:
-            age = int(message.text)  # Проеряем что возраст введен корректно
-        except Exception:
-            bot.send_message(message.from_user, "Цифрами пожалуйста")
-        question = f"Тебе {age} лет , тебя зовут {name} {surname} ?"
-        keyboard = types.InlineKeyboardMarkup()  # Наша клавиатура
-        key_yes = types.InlineKeyboardButton(text="Да", callback_data='yes')  # Кнопка Да
-        keyboard.add(key_yes)
-        key_no = types.InlineKeyboardButton(text="Нет", callback_data='no')  # Кнопка Нет
-        keyboard.add(key_no)
-        bot.send_message(message.from_user.id, text=question, reply_markup=keyboard)
-
-
-@bot.callback_query_handler(func=lambda call: True)
-def callback_worker(call):
-    if call.data == 'yes':
-        bot.send_message(call.message.chat.id, 'Запомню')
-    elif call.data == 'no':
-        start('/reg')
-
+def set_message(message):
+    bot.reply_to(message,"Введите комаду /n")
 
 bot.polling(none_stop=True, interval=0)
